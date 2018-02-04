@@ -209,7 +209,7 @@ public struct BinanceAllPricesRequest: BinanceRequest, Codable {
     public init() {}
 
     public struct Response: Decodable {
-        let elements: [String: Decimal]
+        public let elements: [String: Decimal]
 
         public init(from decoder: Decoder) throws {
             var dict = [String: Decimal]()
@@ -244,7 +244,7 @@ public struct BinanceAllBookTickersRequest: BinanceRequest, Codable {
     }
 
     public struct Response: Decodable {
-        let elements: [String: Element]
+        public let elements: [String: Element]
 
         public init(from decoder: Decoder) throws {
             var dict = [String: Element]()

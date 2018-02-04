@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import Foundation
 
 // MARK: General endpoints
 
@@ -15,12 +16,15 @@ public struct BinancePingRequest: BinanceRequest, Codable {
     public static let method: HTTPMethod = .get
 
     public struct Response: Codable {}
+    public init() {}
 }
 
 /// Test connectivity to the REST API and get the current server time.
 public struct BinanceTimeRequest: BinanceRequest {
     public static let endpoint = "v1/time"
     public static let method: HTTPMethod = .get
+
+    public init() {}
 
     public struct Response: Decodable {
         public let localTime = Date()
@@ -201,6 +205,8 @@ public struct Binance24HourTickerRequest: BinanceRequest, Codable {
 public struct BinanceAllPricesRequest: BinanceRequest, Codable {
     public static let endpoint = "v1/ticker/allPrices"
     public static let method: HTTPMethod = .get
+
+    public init() {}
 
     public struct Response: Decodable {
         let elements: [String: Decimal]
@@ -386,7 +392,7 @@ public struct BinanceTestNewOrderRequest: BinanceSignedRequest, Codable {
         case icebergQuantity = "icebergQty"
         case timestamp
     }
-    
+
     public struct Response: Codable {}
 }
 

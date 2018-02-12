@@ -206,8 +206,6 @@ public struct BinanceAllPricesRequest: BinanceRequest, Codable {
     public static let endpoint = "v1/ticker/allPrices"
     public static let method: HTTPMethod = .get
 
-    public init() {}
-
     public struct Response: Decodable {
         public let elements: [String: Decimal]
 
@@ -229,6 +227,8 @@ public struct BinanceAllPricesRequest: BinanceRequest, Codable {
             public let price: Decimal
         }
     }
+
+    public init() {}
 }
 
 /// Best price/quantity on the order book for all `symbol`s.
@@ -274,6 +274,8 @@ public struct BinanceAllBookTickersRequest: BinanceRequest, Codable {
             }
         }
     }
+
+    public init() {}
 }
 
 // MARK: Account endpoints

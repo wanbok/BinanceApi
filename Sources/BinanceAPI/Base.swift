@@ -215,8 +215,8 @@ public enum BinanceApiError: Error {
 }
 
 public struct BinanceErrorResponse: Codable, Error {
-    let code: Int64
-    let message: String
+    public let code: Int64
+    public let message: String
 
     enum CodingKeys: String, CodingKey {
         case code
@@ -241,19 +241,19 @@ public enum BinanceResponse<T: Decodable>: Decodable {
 }
 
 public struct BinanceOrder: Codable {
-    let symbol: String
-    let orderId: UInt64
-    let clientOrderId: String
-    let price: Decimal
-    let originalQuantity: Decimal
-    let executedQuantity: Decimal
-    let status: BinanceOrderStatus
-    let timeInForce: BinanceOrderTime
-    let type: BinanceOrderType
-    let side: BinanceOrderSide
-    let stopPrice: Decimal
-    let icebergQuantity: Decimal
-    let time: Date
+    public let symbol: String
+    public let orderId: UInt64
+    public let clientOrderId: String
+    public let price: Decimal
+    public let originalQuantity: Decimal
+    public let executedQuantity: Decimal
+    public let status: BinanceOrderStatus
+    public let timeInForce: BinanceOrderTime
+    public let type: BinanceOrderType
+    public let side: BinanceOrderSide
+    public let stopPrice: Decimal
+    public let icebergQuantity: Decimal
+    public let time: Date
 
     enum CodingKeys: String, CodingKey {
         case symbol, orderId, clientOrderId, price

@@ -411,7 +411,7 @@ public struct BinanceNewOrderRequest: BinanceSignedRequest, Codable {
 
   public let symbol: String
   public let side: BinanceOrderSide
-  public let type: BinanceOrderType
+  public let orderType: BinanceOrderType
   /// Should not be sent for a market order.
   public let timeInForce: BinanceOrderTime?
   public let quantity: Decimal
@@ -427,13 +427,13 @@ public struct BinanceNewOrderRequest: BinanceSignedRequest, Codable {
   public let recvWindow: TimeInterval?
   public let timestamp: Date
 
-  public init(symbol: String, side: BinanceOrderSide, type: BinanceOrderType, quantity: Decimal,
+  public init(symbol: String, side: BinanceOrderSide, orderType: BinanceOrderType, quantity: Decimal,
               price: Decimal? = nil, timeInForce: BinanceOrderTime? = nil, newClientOrderId: String? = nil,
               stopPrice: Decimal? = nil, icebergQuantity: Decimal? = nil, newOrderResponseType: BinanceOrderResponseType? = .result,
               recvWindow: TimeInterval? = nil, timestamp: Date = Date()) {
     self.symbol = symbol
     self.side = side
-    self.type = type
+    self.orderType = orderType
     self.quantity = quantity
     self.newClientOrderId = newClientOrderId
     self.stopPrice = stopPrice
@@ -442,7 +442,7 @@ public struct BinanceNewOrderRequest: BinanceSignedRequest, Codable {
     self.recvWindow = recvWindow
     self.timestamp = timestamp
 
-    switch type {
+    switch orderType {
     case .limit:
       assert(timeInForce != nil, "timeInForce should not be nil for a limit order")
       assert(price != nil, "price should not be nil for a limit order")
@@ -481,13 +481,27 @@ public struct BinanceNewOrderRequest: BinanceSignedRequest, Codable {
   }
 
   enum CodingKeys: String, CodingKey {
-    case symbol, side, type, timeInForce, quantity, price, newClientOrderId, stopPrice
+    case symbol, side
+    case orderType = "type"
+    case timeInForce, quantity, price, newClientOrderId, stopPrice
     case icebergQuantity = "icebergQty"
     case newOrderResponseType = "newOrderRespType"
     case recvWindow, timestamp
   }
 
-  public struct Response: Codable {
+  public struct Response: Decodable {
+    public struct Fill: Codable {
+      public let price: Decimal
+      public let quantity: Decimal
+      public let commission: Decimal
+      public let commissionAsset: String
+
+      enum CodingKeys: String, CodingKey {
+        case price
+        case quantity = "qty"
+        case commission, commissionAsset
+      }
+    }
     public let symbol: String
     public let orderId: UInt64
     public let clientOrderId: String
@@ -496,16 +510,44 @@ public struct BinanceNewOrderRequest: BinanceSignedRequest, Codable {
     public let executedQuantity: Decimal
     public let status: BinanceOrderStatus
     public let timeInForce: BinanceOrderTime
-    public let type: BinanceOrderType
+    public let orderType: BinanceOrderType
     public let side: BinanceOrderSide
     public let transactTime: Date
+    public let fills: [Fill]
 
     enum CodingKeys: String, CodingKey {
       case symbol, orderId, clientOrderId, price
       case originalQuantity = "origQty"
       case executedQuantity = "executedQty"
-      case status, timeInForce, type, side
+      case status, timeInForce
+      case orderType = "type"
+      case side
       case transactTime
+      case fills
+    }
+
+    public init(from decoder: Decoder) throws {
+      let dict = try decoder.container(keyedBy: CodingKeys.self)
+      self.symbol = try dict.decode(type(of: self.symbol), forKey: .symbol)
+      self.orderId = try dict.decode(type(of: self.orderId), forKey: .orderId)
+      self.clientOrderId = try dict.decode(type(of: self.clientOrderId), forKey: .clientOrderId)
+      self.price = try dict.decode(type(of: self.price), forKey: .price)
+      self.originalQuantity = try dict.decode(type(of: self.originalQuantity), forKey: .originalQuantity)
+      self.executedQuantity = try dict.decode(type(of: self.executedQuantity), forKey: .executedQuantity)
+      self.status = try dict.decode(type(of: self.status), forKey: .status)
+      self.timeInForce = try dict.decode(type(of: self.timeInForce), forKey: .timeInForce)
+      self.orderType = try dict.decode(type(of: self.orderType), forKey: .orderType)
+      self.side = try dict.decode(type(of: self.side), forKey: .side)
+      self.transactTime = try dict.decode(type(of: self.transactTime), forKey: .transactTime)
+
+      var fills = try? dict.nestedUnkeyedContainer(forKey: .fills)
+      var decodedFills: [Fill] = []
+      while (!(fills?.isAtEnd == true)) {
+        let fill = try fills?.decode(Fill.self)
+        guard let _fill = fill else { continue }
+        decodedFills.append(_fill)
+      }
+      self.fills = decodedFills
     }
   }
 }

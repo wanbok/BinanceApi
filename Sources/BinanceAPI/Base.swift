@@ -62,6 +62,11 @@ public enum BinanceOrderStatus: String, Codable {
 public enum BinanceOrderType: String, Codable {
     case limit = "LIMIT"
     case market = "MARKET"
+    case stopLoss = "STOP_LOSS"
+    case stopLossLimit = "STOP_LOSS_LIMIT"
+    case takeProfit = "TAKE_PROFIT"
+    case takeProfitLimit = "TAKE_PROFIT_LIMIT"
+    case limitMaker = "LIMIT_MAKER"
 }
 
 public enum BinanceOrderSide: String, Codable {
@@ -72,6 +77,12 @@ public enum BinanceOrderSide: String, Codable {
 public enum BinanceOrderTime: String, Codable {
     case goodTilCancelled = "GTC"
     case immediateOrCancel = "IOC"
+}
+
+public enum BinanceOrderResponseType: String, Codable {
+  case ack = "ACK"
+  case result = "RESULT"
+  case full = "FULL"
 }
 
 public enum BinanceCandlesticksInterval: String, Codable {

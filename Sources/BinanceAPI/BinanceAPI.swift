@@ -402,11 +402,14 @@ public struct BinanceNewOrderRequest: BinanceSignedRequest, Codable {
   public let stopPrice: Decimal?
   /// Used with iceberg orders.
   public let icebergQuantity: Decimal?
+  public let newOrderResponseType: BinanceOrderResponseType?
+  public let recvWindow: TimeInterval?
   public let timestamp: Date
 
   public init(symbol: String, side: BinanceOrderSide, type: BinanceOrderType, quantity: Decimal,
               price: Decimal? = nil, timeInForce: BinanceOrderTime? = nil, newClientOrderId: String? = nil,
-              stopPrice: Decimal? = nil, icebergQuantity: Decimal? = nil, timestamp: Date = Date()) {
+              stopPrice: Decimal? = nil, icebergQuantity: Decimal? = nil, newOrderResponseType: BinanceOrderResponseType? = .result,
+              recvWindow: TimeInterval? = nil, timestamp: Date = Date()) {
     self.symbol = symbol
     self.side = side
     self.type = type
@@ -414,33 +417,75 @@ public struct BinanceNewOrderRequest: BinanceSignedRequest, Codable {
     self.newClientOrderId = newClientOrderId
     self.stopPrice = stopPrice
     self.icebergQuantity = icebergQuantity
+    self.newOrderResponseType = newOrderResponseType
+    self.recvWindow = recvWindow
     self.timestamp = timestamp
 
     switch type {
     case .limit:
       assert(timeInForce != nil, "timeInForce should not be nil for a limit order")
-      self.timeInForce = timeInForce
       assert(price != nil, "price should not be nil for a limit order")
+      self.timeInForce = timeInForce
       self.price = price
       break
     case .market:
       self.timeInForce = nil
       self.price = nil
       break
+    case .stopLoss:
+      assert(stopPrice != nil, "stopPrice should not be nil for a stopLoss order")
+      self.timeInForce = nil
+      self.price = price
+    case .stopLossLimit:
+      assert(timeInForce != nil, "timeInForce should not be nil for a stopLossLimit order")
+      assert(price != nil, "price should not be nil for a stopLossLimit order")
+      self.timeInForce = timeInForce
+      self.price = price
+      assert(stopPrice != nil, "stopPrice should not be nil for a stopLossLimit order")
+    case .takeProfit:
+      assert(stopPrice != nil, "stopPrice should not be nil for a takeProfit order")
+      self.timeInForce = nil
+      self.price = nil
+    case .takeProfitLimit:
+      assert(timeInForce != nil, "timeInForce should not be nil for a takeProfitLimit order")
+      assert(price != nil, "price should not be nil for a takeProfitLimit order")
+      assert(stopPrice != nil, "stopPrice should not be nil for a takeProfitLimit order")
+      self.timeInForce = timeInForce
+      self.price = price
+    case .limitMaker:
+      assert(price != nil, "price should not be nil for a limitMaker order")
+      self.timeInForce = nil
+      self.price = price
     }
   }
 
   enum CodingKeys: String, CodingKey {
     case symbol, side, type, timeInForce, quantity, price, newClientOrderId, stopPrice
     case icebergQuantity = "icebergQty"
-    case timestamp
+    case newOrderResponseType = "newOrderRespType"
+    case recvWindow, timestamp
   }
 
   public struct Response: Codable {
     public let symbol: String
     public let orderId: UInt64
     public let clientOrderId: String
+    public let price: Decimal
+    public let originalQuantity: Decimal
+    public let executedQuantity: Decimal
+    public let status: BinanceOrderStatus
+    public let timeInForce: BinanceOrderTime
+    public let type: BinanceOrderType
+    public let side: BinanceOrderSide
     public let transactTime: Date
+
+    enum CodingKeys: String, CodingKey {
+      case symbol, orderId, clientOrderId, price
+      case originalQuantity = "origQty"
+      case executedQuantity = "executedQty"
+      case status, timeInForce, type, side
+      case transactTime
+    }
   }
 }
 
@@ -464,11 +509,14 @@ public struct BinanceTestNewOrderRequest: BinanceSignedRequest, Codable {
   public let stopPrice: Decimal?
   /// Used with iceberg orders.
   public let icebergQuantity: Decimal?
+  public let newOrderResponseType: BinanceOrderResponseType?
+  public let recvWindow: TimeInterval?
   public let timestamp: Date
 
   public init(symbol: String, side: BinanceOrderSide, type: BinanceOrderType, quantity: Decimal,
               price: Decimal? = nil, timeInForce: BinanceOrderTime? = nil, newClientOrderId: String? = nil,
-              stopPrice: Decimal? = nil, icebergQuantity: Decimal? = nil, timestamp: Date = Date()) {
+              stopPrice: Decimal? = nil, icebergQuantity: Decimal? = nil, newOrderResponseType: BinanceOrderResponseType? = .result,
+              recvWindow: TimeInterval? = nil, timestamp: Date = Date()) {
     self.symbol = symbol
     self.side = side
     self.type = type
@@ -476,29 +524,56 @@ public struct BinanceTestNewOrderRequest: BinanceSignedRequest, Codable {
     self.newClientOrderId = newClientOrderId
     self.stopPrice = stopPrice
     self.icebergQuantity = icebergQuantity
+    self.newOrderResponseType = newOrderResponseType
+    self.recvWindow = recvWindow
     self.timestamp = timestamp
 
     switch type {
     case .limit:
       assert(timeInForce != nil, "timeInForce should not be nil for a limit order")
-      self.timeInForce = timeInForce
       assert(price != nil, "price should not be nil for a limit order")
+      self.timeInForce = timeInForce
       self.price = price
       break
     case .market:
       self.timeInForce = nil
       self.price = nil
       break
+    case .stopLoss:
+      assert(stopPrice != nil, "stopPrice should not be nil for a stopLoss order")
+      self.timeInForce = nil
+      self.price = price
+    case .stopLossLimit:
+      assert(timeInForce != nil, "timeInForce should not be nil for a stopLossLimit order")
+      assert(price != nil, "price should not be nil for a stopLossLimit order")
+      self.timeInForce = timeInForce
+      self.price = price
+      assert(stopPrice != nil, "stopPrice should not be nil for a stopLossLimit order")
+    case .takeProfit:
+      assert(stopPrice != nil, "stopPrice should not be nil for a takeProfit order")
+      self.timeInForce = nil
+      self.price = nil
+    case .takeProfitLimit:
+      assert(timeInForce != nil, "timeInForce should not be nil for a takeProfitLimit order")
+      assert(price != nil, "price should not be nil for a takeProfitLimit order")
+      assert(stopPrice != nil, "stopPrice should not be nil for a takeProfitLimit order")
+      self.timeInForce = timeInForce
+      self.price = price
+    case .limitMaker:
+      assert(price != nil, "price should not be nil for a limitMaker order")
+      self.timeInForce = nil
+      self.price = price
     }
   }
 
   enum CodingKeys: String, CodingKey {
     case symbol, side, type, timeInForce, quantity, price, newClientOrderId, stopPrice
     case icebergQuantity = "icebergQty"
-    case timestamp
+    case newOrderResponseType = "newOrderRespType"
+    case recvWindow, timestamp
   }
 
-  public struct Response: Codable {}
+  public typealias Response = BinanceNewOrderRequest.Response
 }
 
 /// Check an order's status.

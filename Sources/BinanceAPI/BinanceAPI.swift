@@ -52,12 +52,16 @@ public struct BinanceExchangeInfoRequest: BinanceRequest, Codable {
         public let minQuantity: Decimal?
         public let maxQuantity: Decimal?
         public let stepSize: Decimal?
+        public let minPrice: Decimal?
+        public let maxPrice: Decimal?
+        public let tickSize: Decimal?
 
         enum CodingKeys: String, CodingKey {
           case filterType
           case minQuantity = "minQty"
           case maxQuantity = "maxQty"
           case stepSize
+          case minPrice, maxPrice, tickSize
         }
 
         public init(from decoder: Decoder) throws {
@@ -66,6 +70,9 @@ public struct BinanceExchangeInfoRequest: BinanceRequest, Codable {
           self.minQuantity = try? values.decode(Decimal.self, forKey: .minQuantity)
           self.maxQuantity = try? values.decode(Decimal.self, forKey: .maxQuantity)
           self.stepSize = try? values.decode(Decimal.self, forKey: .stepSize)
+          self.minPrice = try? values.decode(Decimal.self, forKey: .minPrice)
+          self.maxPrice = try? values.decode(Decimal.self, forKey: .maxPrice)
+          self.tickSize = try? values.decode(Decimal.self, forKey: .tickSize)
         }
       }
 
@@ -80,6 +87,9 @@ public struct BinanceExchangeInfoRequest: BinanceRequest, Codable {
       public let minQuantity: Decimal
       public let maxQuantity: Decimal
       public let stepSize: Decimal
+      public let minPrice: Decimal
+      public let maxPrice: Decimal
+      public let tickSize: Decimal
 
       enum CodingKeys: String, CodingKey {
         case symbol
@@ -105,19 +115,30 @@ public struct BinanceExchangeInfoRequest: BinanceRequest, Codable {
         self.icebergAllowed = try values.decode(Bool.self, forKey: .icebergAllowed)
 
         var filters = try values.nestedUnkeyedContainer(forKey: .filters)
-        var decodedFilter: (minQuantity: Decimal, maxQuantity: Decimal, stepSize: Decimal)? = nil
-        while(!filters.isAtEnd && decodedFilter == nil) {
+        var decodedQuantityFilter: (minQuantity: Decimal, maxQuantity: Decimal, stepSize: Decimal)? = nil
+        var decodedPriceFilter: (minPrice: Decimal, maxPrice: Decimal, tickSize: Decimal)? = nil
+        while(!filters.isAtEnd || (decodedQuantityFilter == nil && decodedPriceFilter == nil)) {
           let filter = try filters.decode(Filter.self)
           if let minQty = filter.minQuantity,
             let maxQty = filter.maxQuantity,
             let stepSize = filter.stepSize
           {
-            decodedFilter = (minQty, maxQty, stepSize)
+            decodedQuantityFilter = (minQty, maxQty, stepSize)
+          }
+          if let minPrice = filter.minPrice,
+            let maxPrice = filter.maxPrice,
+            let tickSize = filter.tickSize
+          {
+            decodedPriceFilter = (minPrice, maxPrice, tickSize)
           }
         }
-        self.minQuantity = decodedFilter?.minQuantity ?? 0
-        self.maxQuantity = decodedFilter?.maxQuantity ?? 0
-        self.stepSize = decodedFilter?.stepSize ?? 0
+        self.minQuantity = decodedQuantityFilter?.minQuantity ?? 0
+        self.maxQuantity = decodedQuantityFilter?.maxQuantity ?? 0
+        self.stepSize = decodedQuantityFilter?.stepSize ?? 0
+
+        self.minPrice = decodedPriceFilter?.minPrice ?? 0
+        self.maxPrice = decodedPriceFilter?.maxPrice ?? 0
+        self.tickSize = decodedPriceFilter?.tickSize ?? 0
       }
     }
 

@@ -394,9 +394,9 @@ public struct BinanceBookTickersRequest: BinanceRequest, Codable {
       let dict = try decoder.container(keyedBy: CodingKeys.self)
       self.symbol = try dict.decode(type(of: self.symbol), forKey: .symbol)
 
-      guard let asset = Asset.parse(symbol: self.symbol) else { throw BinanceApiError.unknown }
-      self.base = asset.base
-      self.quote = asset.quote
+      let asset = Asset.parse(symbol: self.symbol)
+      self.base = asset?.base ?? ""
+      self.quote = asset?.quote ?? ""
       self.bidPrice = try dict.decode(type(of: self.bidPrice), forKey: .bidPrice)
       self.bidQuantity = try dict.decode(type(of: self.bidQuantity), forKey: .bidQuantity)
       self.askPrice = try dict.decode(type(of: self.askPrice), forKey: .askPrice)
@@ -414,7 +414,7 @@ public struct BinanceBookTickersRequest: BinanceRequest, Codable {
         dict.reserveCapacity(count)
       }
       while !container.isAtEnd {
-        let element = try container.decode(Order.self)
+        guard let element = try? container.decode(Order.self) else { continue }
         dict[element.symbol] = element
       }
       self.orderDictionary = dict

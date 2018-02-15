@@ -404,22 +404,7 @@ public struct BinanceBookTickersRequest: BinanceRequest, Codable {
     }
   }
 
-  public struct Response: Decodable {
-    public let orders: [String: Order]
-
-    public init(from decoder: Decoder) throws {
-      var dict = [String: Order]()
-      var container = try decoder.unkeyedContainer()
-      if let count = container.count {
-        dict.reserveCapacity(count)
-      }
-      while !container.isAtEnd {
-        guard let order = try? container.decode(Order.self) else { continue }
-        dict[order.symbol] = order
-      }
-      self.orders = dict
-    }
-  }
+  public typealias Response = [Order]
 
   public init() {}
 }

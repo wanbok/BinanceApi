@@ -362,7 +362,7 @@ public struct BinanceBookTickersRequest: BinanceRequest, Codable {
 
   public struct Asset {
     private static let markets: [String] = ["BTC", "ETH", "USDT", "BNB"]
-    internal static func parse(symbol: String) -> Asset? {
+    public static func parse(symbol: String) -> Asset? {
       guard let quote = Asset.markets.filter(symbol.hasSuffix).first else { return nil }
       let index = symbol.index(symbol.endIndex, offsetBy: -quote.count)
       let base = String(symbol[..<index])

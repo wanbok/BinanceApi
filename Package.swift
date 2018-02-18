@@ -17,9 +17,7 @@ let package = Package(
     targets: [
         .target(
             name: "BinanceAPI",
-            dependencies: ["Alamofire", "CommonCrypto"]),
-        .testTarget(
-            name: "BinanceAPITests",
-            dependencies: ["BinanceAPI"]),
+            dependencies: ["Alamofire", "CommonCrypto"]
+        ),
     ]
 )
